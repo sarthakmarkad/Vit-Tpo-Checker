@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+*.tsbuildinfo
+
+# Environment & secrets
+.env
+.env.*
+!.env.example
+
+# HAR captures may contain session tokens / PII — never commit
+*.har
+
+# Debug captures (raw redacted API payloads, dev only)
+var/
+
+# Local data (downloaded attachments, extracted text, local DB)
+data/
+prisma/*.db
+prisma/*.db-journal
+
+# Test coverage
+coverage/
+
+# OS / editor noise
+.DS_Store

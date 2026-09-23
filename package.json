@@ -1,0 +1,55 @@
+{
+  "name": "placement-intelligence",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AI Placement Intelligence Platform for the VIT T&P portal (tpo.vierp.in)",
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint .",
+    "probe": "tsx src/scripts/tpo-probe.ts",
+    "login": "tsx src/scripts/tpo-login.ts",
+    "sync:once": "tsx src/scripts/sync-once.ts",
+    "monitor": "tsx src/scripts/monitor.ts",
+    "profile": "tsx src/scripts/profile.ts",
+    "eligibility": "tsx src/scripts/eligibility.ts",
+    "seed:fixtures": "tsx src/scripts/seed-fixtures.ts",
+    "dashboard:dev": "npm run dev --workspace apps/dashboard",
+    "dashboard:build": "npm run build --workspace apps/dashboard"
+  },
+  "prisma": {},
+  "dependencies": {
+    "@prisma/client": "^6.19.3",
+    "fastify": "^5.0.0",
+    "node-cron": "^4.0.0",
+    "nodemailer": "^7.0.0",
+    "pino": "^9.0.0",
+    "undici": "^7.0.0",
+    "unpdf": "^1.8.1",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "@types/nodemailer": "^7.0.0",
+    "dotenv": "^17.0.0",
+    "prisma": "^6.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0",
+    "vitest": "^3.0.0"
+  },
+  "allowScripts": {
+    "@prisma/engines@6.19.3": true,
+    "esbuild@0.28.2": true,
+    "prisma@6.19.3": true,
+    "@prisma/client@6.19.3": true
+  },
+  "workspaces": [
+    "apps/dashboard"
+  ]
+}
