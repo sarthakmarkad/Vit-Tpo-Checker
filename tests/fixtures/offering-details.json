@@ -1,0 +1,224 @@
+{
+  "msg": "200",
+  "code": "BMC2026-271",
+  "company_name": "BMC Software",
+  "selction_procedure": [
+    {
+      "round_number": 1,
+      "companyround": "Technical Interview",
+      "isfinal": false
+    },
+    {
+      "round_number": 2,
+      "companyround": "Completed Internship but cant get PPO",
+      "isfinal": true
+    }
+  ],
+  "criteria": [
+    {
+      "id": 5577,
+      "degree": "SSC",
+      "percentage": 70,
+      "program": "All",
+      "criteria_number": 1
+    },
+    {
+      "id": 5578,
+      "degree": "HSC",
+      "percentage": 70,
+      "program": "All",
+      "criteria_number": 2
+    },
+    {
+      "id": 5579,
+      "degree": "Diploma",
+      "percentage": 70,
+      "program": "All",
+      "criteria_number": 3
+    },
+    {
+      "id": 5580,
+      "degree": "Graduation",
+      "percentage": 8,
+      "program": "All",
+      "criteria_number": 4
+    }
+  ],
+  "minpackage": 16,
+  "maxpackage": 16,
+  "minstipend": 25000,
+  "maxstipend": 25000,
+  "placementtype": "Internship + Performance based PPO",
+  "description": "Offer for Full time employee: 16 lpa",
+  "job_description": null,
+  "backlog": false,
+  "is_dead_backlog_allowed": false,
+  "is_live_backlog_allowed": false,
+  "isplacedstudentallowed": false,
+  "isinternstudentallowed": false,
+  "isyeardownallowed": true,
+  "programlist": [
+    {
+      "org": "VIT",
+      "year": null,
+      "program": "BTech - Computer Science and Engineering (Data Science)"
+    },
+    {
+      "org": "VIT",
+      "year": null,
+      "program": "BTech-Computer Engineering (Software Engineering)"
+    },
+    {
+      "org": "VIT",
+      "year": null,
+      "program": "BTech -Computer Science and Engineering (IOT and CS Including BCT)"
+    }
+  ],
+  "locations": [],
+  "companyoffering": {
+    "id": 5705,
+    "companylevel": {
+      "id": 1
+    },
+    "isplacedstudentallowed": false,
+    "tpo": {
+      "id": 1
+    },
+    "internshiptype": null,
+    "visit_number": 0,
+    "bond_description": null,
+    "organization": [
+      {
+        "id": 1
+      }
+    ],
+    "isoffercomplusaryacceptable": false,
+    "ishigherstudiesallowed": false,
+    "stipend_description": "Stipend for interns (online): 3rd year student: 50K for 5 months. (Total 440 Hrs Flexible working hours) 4th Year Student: 1.5 lacs for 6 months",
+    "from_schedule_date": null,
+    "updation_username": "10201@vit.edu",
+    "reg_end_time": "10:00",
+    "skill": [],
+    "final_mail_letter_filepath": null,
+    "creation_date": "2026-08-13T10:39:46Z",
+    "tpofaculty": null,
+    "reg_start_date": "2026-08-12T18:30:00Z",
+    "placement_process_locations": null,
+    "specific_criteria": null,
+    "isyeardownallowed": true,
+    "city": [],
+    "locations": null,
+    "stipend": 0,
+    "contact_email": "urvashi@helixops.ai",
+    "creation_username": "10201@vit.edu",
+    "placementtype": {
+      "id": 6
+    },
+    "updation_ip_address": "103.97.164.99",
+    "is_approved_by_tpo": false,
+    "remark": null,
+    "is_completed": false,
+    "minPackage": 16,
+    "package_description": "Offer for Full time employee: 16 lpa",
+    "final_mail_letter_filename": null,
+    "is_intertesredinOnlyInternship_allowed": false,
+    "is_company_feedback_given": false,
+    "job_description": null,
+    "isinternstudentallowed": false,
+    "industry": [],
+    "gender": null,
+    "companyofferingstatus": {
+      "id": 1
+    },
+    "isactive": true,
+    "is_dead_backlog_allowed": false,
+    "is_live_backlog_allowed": false,
+    "maxPackage": 16,
+    "contact_person_name": " Urvashi Thakkar",
+    "is_data_send": false,
+    "companydrivemode": null,
+    "isoffertobeacceptedbystudent": false,
+    "offeredby": {
+      "id": 2221
+    },
+    "tpoprogram": [
+      {
+        "id": 126
+      }
+    ],
+    "updation_date": "2026-08-19T12:30:36Z",
+    "company": {
+      "id": 1072
+    },
+    "department": null,
+    "companyofferingcode": "BMC2026-271",
+    "reg_start_time": "16:15",
+    "companytype": {
+      "id": 2
+    },
+    "to_schedule_date": null,
+    "semester": null,
+    "maxStipend": 25000,
+    "academicyear": {
+      "id": 47
+    },
+    "contact_phone": null,
+    "creation_ip_address": "103.97.164.99",
+    "batch": null,
+    "minStipend": 25000,
+    "reg_end_date": "2026-08-16T18:30:00Z",
+    "iscvrequired": true,
+    "dream_package": 0
+  },
+  "dream_company_package": 0,
+  "remark": null,
+  "finalDegreeList": [
+    {
+      "name": "Graduation",
+      "id": 1,
+      "type": "CPI"
+    },
+    {
+      "name": "SSC",
+      "id": 4,
+      "type": "Percentage"
+    },
+    {
+      "name": "HSC",
+      "id": 5,
+      "type": "Percentage"
+    },
+    {
+      "name": "Post Graduation",
+      "id": 7,
+      "type": "CPI"
+    },
+    {
+      "name": "Diploma",
+      "id": 9,
+      "type": "Percentage"
+    }
+  ],
+  "instructionlist": [],
+  "specificcriteria": null,
+  "is_completed": false,
+  "internship_type": null,
+  "bond_description": null,
+  "collaborators": [],
+  "stipend_description": "Stipend for interns (online): 3rd year student: 50K for 5 months. (Total 440 Hrs Flexible working hours) 4th Year Student: 1.5 lacs for 6 months",
+  "token_status": "NC",
+  "industrytype": "",
+  "specific_criteria": null,
+  "companyofferingcode": "BMC2026-271",
+  "degree": [
+    "Graduation",
+    "SSC",
+    "HSC",
+    "Post Graduation",
+    "Diploma"
+  ],
+  "placement_mode": null,
+  "incharge_faculty": "SMT. MITRAGOTRI APARNA SATISH - aparna.mitragotri@vit.edu",
+  "companytype": "Regular",
+  "semester": null
+}
