@@ -1,0 +1,155 @@
+// Placement Intelligence Platform — data model (V1)
+//
+// Identity: the TPO offering id (`externalId`) is the stable identity for
+// opportunities; company names are NOT unique across drives/roles.
+// AI output (M8) lives in `aiInterpretation` and never overwrites source data.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         Int             @id @default(autoincrement())
+  email      String          @unique
+  displayName String?
+  notifyEmail String?
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+  profile    StudentProfile?
+}
+
+model StudentProfile {
+  id                Int      @id @default(autoincrement())
+  userId            Int      @unique
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  branch            String?
+  program           String?
+  graduationYear    Int?
+  cgpa              Float?
+  sscPercentage     Float?
+  hscPercentage     Float?
+  diplomaPercentage Float?
+  activeBacklogs    Int      @default(0)
+  deadBacklogs      Int      @default(0)
+  skills            Json?
+  preferredRoles    Json?
+  preferredLocations Json?
+  updatedAt         DateTime @updatedAt
+}
+
+model PlacementOpportunity {
+  id                Int       @id @default(autoincrement())
+  externalId        String    @unique
+  companyName       String
+  offeringCode      String?
+  packageLpa        Float?
+  minPackageLpa     Float?
+  placementType     String?
+  internshipType    String?
+  companyType       String?
+  academicYear      String?
+  registrationStart DateTime?
+  registrationEnd   DateTime?
+  minimumCgpa       Float?
+  sscPercentage     Float?
+  hscPercentage     Float?
+  diplomaPercentage Float?
+  activeBacklogsAllowed  Boolean?
+  deadBacklogsAllowed    Boolean?
+  placedStudentsAllowed  Boolean?
+  yearDownAllowed        Boolean?
+  higherStudiesAllowed   Boolean?
+  programs         Json?
+  graduationYears  Json?
+  organizations    Json?
+  skills           Json?
+  locations        Json?
+  minStipend       Float?
+  maxStipend       Float?
+  stipendDescription String?
+  description      String?   @db.Text
+  jobDescription   String?   @db.Text
+  bondDescription  String?   @db.Text
+  selectionProcess Json?
+  isActive         Boolean?
+  contentHash      String?
+  /// AI interpretation layer — never overrides source-derived fields above.
+  aiInterpretation Json?
+  /// Full raw source payload, preserved for debugging/audit.
+  rawData          Json
+  firstSeenAt      DateTime  @default(now())
+  lastSeenAt       DateTime  @default(now()) @updatedAt
+  lastDetailFetchAt DateTime?
+
+  requirements PlacementRequirement?
+  attachments  PlacementAttachment[]
+  changes      PlacementChange[]
+
+  @@index([registrationEnd])
+  @@index([companyName])
+}
+
+model PlacementRequirement {
+  id            Int      @id @default(autoincrement())
+  opportunityId Int      @unique
+  opportunity   PlacementOpportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  /// Raw criteria rows: [{degree, percentage, program}]
+  criteria      Json
+  updatedAt     DateTime @updatedAt
+}
+
+model PlacementAttachment {
+  id            Int       @id @default(autoincrement())
+  opportunityId Int
+  opportunity   PlacementOpportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  externalId    String
+  filename      String
+  objectKey     String?
+  downloadedAt  DateTime?
+  localPath     String?
+  extractedText String?   @db.Text
+  contentHash   String?
+  // M9: verified structured extraction of the document text (null = not run yet).
+  aiExtraction  Json?
+  aiModel       String?
+  aiExtractedAt DateTime?
+  createdAt     DateTime  @default(now())
+
+  @@unique([opportunityId, externalId])
+}
+model PlacementChange {
+  id            Int      @id @default(autoincrement())
+  opportunityId Int
+  opportunity   PlacementOpportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  externalId    String
+  /// "new" | "updated"
+  type          String
+  previousHash  String?
+  newHash       String?
+  /// [{field, from, to}]
+  fieldChanges  Json?
+  detectedAt    DateTime @default(now())
+  notifiedAt    DateTime?
+
+  @@index([detectedAt])
+}
+
+model SyncRun {
+  id         Int       @id @default(autoincrement())
+  startedAt  DateTime  @default(now())
+  finishedAt DateTime?
+  /// "running" | "success" | "failed"
+  status     String    @default("running")
+  fetched    Int       @default(0)
+  created    Int       @default(0)
+  updated    Int       @default(0)
+  unchanged  Int       @default(0)
+  failed     Int       @default(0)
+  durationMs Int?
+  error      String?   @db.Text
+}
