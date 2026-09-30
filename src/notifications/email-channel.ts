@@ -153,6 +153,26 @@ export class EmailChannel implements NotificationChannel {
     log?.info({ to: this.config.to, subject }, "digest email sent");
   }
 
+  /** Operational alert (e.g. repeated sync failures) — same transport, plain text. */
+  async sendFailureAlert(subject: string, text: string, log?: Logger): Promise<void> {
+    if (!this.configured || !this.config.transporter) {
+      throw new Error(
+        "EmailChannel not configured (set SMTP_HOST/SMTP_PORT and NOTIFY_EMAIL_TO)",
+      );
+    }
+    if (this.config.dryRun) {
+      log?.info({ subject, to: this.config.to }, "DRY_RUN: would send failure alert");
+      return;
+    }
+    await this.config.transporter.sendMail({
+      from: this.config.from,
+      to: this.config.to,
+      subject,
+      text,
+    });
+    log?.info({ to: this.config.to, subject }, "failure alert sent");
+  }
+
   private subject(digest: NotificationDigest): string {
     const n = digest.newOpportunities.length;
     const u = digest.updatedOpportunities.length;

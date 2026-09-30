@@ -104,6 +104,8 @@ npm run monitor
 - A failed run is logged and retried on the next tick; one broken opportunity
   never aborts the run.
 - Sends the email digest for new/changed opportunities (per DRY_RUN config).
+- Emails a throttled failure alert after every 3rd consecutive failed sync
+  (with a login hint on 401s); silent while healthy.
 - Graceful SIGINT/SIGTERM shutdown.
 
 ## Running as a background service (launchd)

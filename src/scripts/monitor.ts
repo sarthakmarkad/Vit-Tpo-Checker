@@ -10,7 +10,9 @@ import { AiClient } from "../ai/client.js";
 import { PlacementAIService } from "../ai/placement-ai-service.js";
 import { EmailChannel } from "../notifications/email-channel.js";
 import { NotificationService } from "../notifications/notification-service.js";
+import { SyncFailureAlerter } from "../notifications/sync-failure-alerter.js";
 import { PlacementMonitorJob } from "../scheduler/placement-monitor-job.js";
+import type { SyncSummary } from "../sync/placement-sync-service.js";
 
 /**
  * Long-running monitor (M7): fetch → normalize → detect → repeat.
@@ -26,13 +28,28 @@ async function main(): Promise<void> {
   const ai = new PlacementAIService(new AiClient({}, log), log);
   const attachments = new AttachmentService(prisma, log, undefined, undefined, ai);
   const sync = new PlacementSyncService(client, prisma, log, attachments);
-  const notifier = new NotificationService(prisma, log, [EmailChannel.fromEnv()].filter((c) => c !== undefined));
+  const emailChannel = EmailChannel.fromEnv();
+  const notifier = new NotificationService(prisma, log, [emailChannel].filter((c) => c !== undefined));
+  const alerter = emailChannel
+    ? new SyncFailureAlerter(
+        async (subject, body) => emailChannel.sendFailureAlert(subject, body, log),
+        log,
+      )
+    : undefined;
 
   // Sync + notify (M10) as one engine: notification failure never breaks the tick.
+  // Repeated sync failures email a throttled operational alert (see SyncFailureAlerter).
   const syncEngine = {
-    run: async () => {
+    run: async (): Promise<SyncSummary> => {
       const startedAt = new Date();
-      const summary = await sync.run();
+      let summary: SyncSummary;
+      try {
+        summary = await sync.run();
+      } catch (err) {
+        await alerter?.recordFailure(err);
+        throw err;
+      }
+      alerter?.recordSuccess();
       try {
         await notifier.notifySince(startedAt);
       } catch (err) {
