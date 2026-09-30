@@ -1,4 +1,3 @@
-import { loadEnv } from "../config/env.js";
 import { logger } from "../logger.js";
 import { TpoClient } from "../tpo/client.js";
 import { TpoError, TpoSessionMissingError } from "../tpo/errors.js";
@@ -10,7 +9,6 @@ import { SigningSessionProvider } from "../tpo/session.js";
  * Never prints session header values.
  */
 
-const env = loadEnv();
 const log = logger.child({ script: "tpo-probe" });
 
 async function main(): Promise<number> {

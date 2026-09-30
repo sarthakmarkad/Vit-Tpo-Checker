@@ -53,8 +53,15 @@ const rawDetailsSchema = z.looseObject({
       isfinal: z.boolean().nullish(),
     }),
   ),
+  // College sends numbers for some drives and free text ("Third Year",
+  // "BTech") for others — accept both, normalize downstream.
   programlist: z
-    .array(z.looseObject({ program: z.string().nullish(), year: z.number().nullish() }))
+    .array(
+      z.looseObject({
+        program: z.string().nullish(),
+        year: z.union([z.number(), z.string()]).nullish(),
+      }),
+    )
     .nullish(),
   locations: z.array(z.unknown()).nullish(),
   is_live_backlog_allowed: z.boolean().nullish(),
@@ -163,7 +170,16 @@ export function applyDetails(
     new Set(
       (d.programlist ?? [])
         .map((p) => p.year)
-        .filter((y): y is number => typeof y === "number"),
+        .map((y): number | null => {
+          if (typeof y === "number") return y;
+          if (typeof y === "string") {
+            const n = Number(y);
+            return Number.isInteger(n) ? n : null;
+          }
+          return null;
+        })
+        // Free-text descriptors ("Third Year", "BTech") are not batch years.
+        .filter((y): y is number => y !== null && y >= 2000 && y <= 2100),
     ),
   ).sort((a, b) => a - b);
 

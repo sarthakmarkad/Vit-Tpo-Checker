@@ -203,8 +203,8 @@ export class TpoClient {
     }
     if (this.callCount === 0) {
       const todayCount = await countTodayAuditEntries();
-      if (todayCount >= this.env.MAX_API_CALLS_PER_RUN * 4) {
-        throw new RequestBudgetExceededError(this.env.MAX_API_CALLS_PER_RUN * 4);
+      if (todayCount >= this.env.TPO_DAILY_MAX_API_CALLS) {
+        throw new RequestBudgetExceededError(this.env.TPO_DAILY_MAX_API_CALLS);
       }
     }
     this.callCount += 1;

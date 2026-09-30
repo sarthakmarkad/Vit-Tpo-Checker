@@ -36,7 +36,7 @@ function isRecord(v: unknown): v is Record<string, unknown> {
   return typeof v === "object" && v !== null && !Array.isArray(v);
 }
 
-export function redact(value: unknown, keyHint = ""): unknown {
+export function redact(value: unknown, _keyHint = ""): unknown {
   if (typeof value === "string") {
     let s = value;
     for (const [pattern, replacement] of SENSITIVE_VALUE_PATTERNS) {

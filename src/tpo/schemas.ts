@@ -74,7 +74,9 @@ export const rawOfferingDetailsSchema = z.looseObject({
   programlist: z.array(
     z.looseObject({
       org: z.string().nullish(),
-      year: z.number().nullish(),
+      // College sends numbers for some drives and free text ("Third Year",
+      // "BTech") for others — accept both, normalize downstream.
+      year: z.union([z.number(), z.string()]).nullish(),
       program: z.string().nullish(),
     }),
   ),

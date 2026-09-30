@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { rm, readFile } from "node:fs/promises";
 import path from "node:path";
 import { logger } from "../../src/logger.js";
@@ -114,10 +114,6 @@ describe("AttachmentService (integration, mocked download)", () => {
     });
     opportunityId = opp.id;
 
-    const response = new Response(PDF_BYTES.slice(), {
-      status: 200,
-      headers: { "content-type": "application/pdf" },
-    });
     service = new AttachmentService(
       prisma,
       logger,

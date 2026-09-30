@@ -1,4 +1,3 @@
-import { loadEnv, type Env } from "../config/env.js";
 import { TpoSessionMissingError } from "./errors.js";
 import { loadStoredSession, type StoredSession } from "./login.js";
 import { loadOrCreateDeviceKey, signRequestPayload, type DeviceKey } from "./device.js";

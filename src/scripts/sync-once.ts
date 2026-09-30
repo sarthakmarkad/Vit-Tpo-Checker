@@ -1,4 +1,3 @@
-import { loadEnv } from "../config/env.js";
 import { logger } from "../logger.js";
 import { TpoClient } from "../tpo/client.js";
 import { SigningSessionProvider } from "../tpo/session.js";

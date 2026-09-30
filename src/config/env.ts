@@ -44,6 +44,12 @@ export const envSchema = z.object({
   ALLOW_LIVE_API: booleanEnv(false),
   /** Hard per-run budget of API requests (protects the college server). */
   MAX_API_CALLS_PER_RUN: z.coerce.number().int().min(1).max(500).default(60),
+  /**
+   * Rolling 24h cap on API requests, counted from the audit log. A 30-minute
+   * monitor makes ~5 calls/tick (~240/day for a small listing), so the cap
+   * must stay above that or the monitor starves mid-day.
+   */
+  TPO_DAILY_MAX_API_CALLS: z.coerce.number().int().min(1).max(10_000).default(240),
   /** Minimum spacing between consecutive API requests (ms). */
   API_MIN_REQUEST_INTERVAL_MS: z.coerce.number().int().min(250).max(60_000).default(1_000),
 
@@ -91,7 +97,6 @@ export function loadEnv(): Env {
   if (cached) return cached;
   // Load .env if present (no external dep needed on Node >= 20.6)
   try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
     process.loadEnvFile?.();
   } catch {
     // .env absent — fine for tests/CI

@@ -222,7 +222,7 @@ export class AttachmentService {
   /** Download with a hard size cap. Throws on failure/oversize. */
   private async download(
     fileUrl: string,
-    attachmentId: number,
+    _attachmentId: number,
   ): Promise<Uint8Array> {
     const response = await this.fetchFn(fileUrl);
     if (!response.ok) {
