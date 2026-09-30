@@ -106,6 +106,49 @@ npm run monitor
 - Sends the email digest for new/changed opportunities (per DRY_RUN config).
 - Graceful SIGINT/SIGTERM shutdown.
 
+## Running as a background service (launchd)
+
+The monitor runs as a macOS LaunchAgent — **independent of any terminal**. It
+starts at login, keeps running in the background, relaunches automatically if
+it crashes, and polls the portal every `SYNC_INTERVAL_MINUTES`.
+
+```bash
+mkdir -p var/logs
+cp deploy/placement-monitor.plist ~/Library/LaunchAgents/
+launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.sarthakmarkad.placement-monitor.plist
+```
+
+- Logs: `tail -f var/logs/launchd.out.log` (errors in `launchd.err.log`)
+- Stop: `launchctl bootout gui/$(id -u)/com.sarthakmarkad.placement-monitor`
+- Start again: `launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.sarthakmarkad.placement-monitor.plist`
+- Restart after refreshing the portal session: `npm run login` then
+  `launchctl kickstart -k gui/$(id -u)/com.sarthakmarkad.placement-monitor`
+
+The plist pins the project as the working directory (`.env` and `var/` are
+resolved relative to it) and restarts the job on non-zero exit, throttled to
+one restart per minute so a failing session cannot spin against the API.
+All guardrails (per-run budget, daily cap, 1s spacing, audit log) apply to the
+background job exactly as to manual runs.
+
+## Notifications (email digest)
+
+After every sync tick the monitor emails a digest of new/changed
+opportunities — field-level diffs, deadlines, eligibility at a glance.
+Configure in `.env`:
+
+```
+NOTIFY_EMAIL_TO=you@example.com   # recipient (channel disabled while empty)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=you@gmail.com           # sending account
+SMTP_PASS=<app password>          # app password, never commit
+DRY_RUN=false                     # actually send (default true = log only)
+```
+
+With `DRY_RUN=true` the digest is logged instead of sent, so wiring is
+verifiable without side effects. The same change feed is always visible in the
+dashboard at `/changes`.
+
 ## V1 definition of done
 
 - [x] Backend starts, DB connects, T&P client works (live-verified)

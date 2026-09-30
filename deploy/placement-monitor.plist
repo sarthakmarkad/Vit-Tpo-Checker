@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  LaunchAgent template for the placement monitor.
+
+  Install:
+    mkdir -p var/logs
+    cp deploy/placement-monitor.plist ~/Library/LaunchAgents/
+    launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.sarthakmarkad.placement-monitor.plist
+
+  Paths assume the project lives at ~/Documents/Projects/vit-tpo — adjust if it moves.
+-->
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.sarthakmarkad.placement-monitor</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/usr/local/bin/npm</string>
+    <string>run</string>
+    <string>monitor</string>
+  </array>
+
+  <key>WorkingDirectory</key>
+  <string>/Users/sarthakmarkad/Documents/Projects/vit-tpo</string>
+
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key>
+    <string>/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+  </dict>
+
+  <key>RunAtLoad</key>
+  <true/>
+
+  <key>KeepAlive</key>
+  <dict>
+    <key>SuccessfulExit</key>
+    <false/>
+  </dict>
+
+  <key>ThrottleInterval</key>
+  <integer>60</integer>
+
+  <key>ProcessType</key>
+  <string>Background</string>
+
+  <key>StandardOutPath</key>
+  <string>/Users/sarthakmarkad/Documents/Projects/vit-tpo/var/logs/launchd.out.log</string>
+
+  <key>StandardErrorPath</key>
+  <string>/Users/sarthakmarkad/Documents/Projects/vit-tpo/var/logs/launchd.err.log</string>
+</dict>
+</plist>
