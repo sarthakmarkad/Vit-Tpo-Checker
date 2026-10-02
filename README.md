@@ -101,6 +101,9 @@ npm run monitor
 
 - Syncs immediately at startup, then every `SYNC_INTERVAL_MINUTES` (default 30).
 - Skips a tick if the previous run is still in flight (never queues).
+- Self-heals an expired session: an auth rejection (HTTP 401/403 or
+  business-code 401) triggers an automatic first-party re-login from `.env`
+  credentials (throttled to one attempt per 10 min) and retries the request.
 - A failed run is logged and retried on the next tick; one broken opportunity
   never aborts the run.
 - Sends the email digest for new/changed opportunities (per DRY_RUN config).
@@ -123,8 +126,10 @@ launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.sarthakmarkad.placem
 - Logs: `tail -f var/logs/launchd.out.log` (errors in `launchd.err.log`)
 - Stop: `launchctl bootout gui/$(id -u)/com.sarthakmarkad.placement-monitor`
 - Start again: `launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.sarthakmarkad.placement-monitor.plist`
-- Restart after refreshing the portal session: `npm run login` then
-  `launchctl kickstart -k gui/$(id -u)/com.sarthakmarkad.placement-monitor`
+- Session expiry self-heals via automatic re-login (see Monitoring pipeline).
+  The failure-alert email only fires if that fails (e.g. the password changed)
+  — then run `npm run login` and
+  `launchctl kickstart -k gui/$(id -u)/com.sarthakmarkad.placement-monitor`.
 
 The plist pins the project as the working directory (`.env` and `var/` are
 resolved relative to it) and restarts the job on non-zero exit, throttled to

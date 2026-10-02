@@ -117,15 +117,25 @@ export class TpoClient {
 
   /** Session health check — the cheapest legitimate validity probe. */
   async probeSession(): Promise<RawSessionInfo> {
-    const payload = await this.requestJson("probe", "GET", "/login/slidebardashboardnew");
-    expectBusinessOk(payload, "/login/slidebardashboardnew");
+    const payload = await this.requestJson(
+      "probe",
+      "GET",
+      "/login/slidebardashboardnew",
+      undefined,
+      (p) => expectBusinessOk(p, "/login/slidebardashboardnew"),
+    );
     return rawSessionInfoSchema.parse(payload);
   }
 
   async getCompanyOfferings(): Promise<RawCompanyOffering[]> {
     const path = "/TPOCompanyScheduling/newschedulesdcopanies";
-    const payload = await this.requestJson("newschedulesdcopanies", "POST", path, undefined);
-    expectBusinessOk(payload, path);
+    const payload = await this.requestJson(
+      "newschedulesdcopanies",
+      "POST",
+      path,
+      undefined,
+      (p) => expectBusinessOk(p, path),
+    );
     const parsed = rawOfferingListSchema.parse(payload);
     return parsed.company_list;
   }
@@ -137,8 +147,8 @@ export class TpoClient {
       "POST",
       path,
       { offering: offeringId },
+      (p) => expectBusinessOk(p, path),
     );
-    expectBusinessOk(payload, path);
     return rawOfferingDetailsSchema.parse(payload);
   }
 
@@ -149,8 +159,8 @@ export class TpoClient {
       "POST",
       path,
       { offering: offeringId },
+      (p) => expectBusinessOk(p, path),
     );
-    expectBusinessOk(payload, path);
     const parsed = rawAttachmentListSchema.parse(payload);
     return parsed.companyOfferingAttachmentList;
   }
@@ -193,6 +203,7 @@ export class TpoClient {
     method: "GET" | "POST",
     path: string,
     jsonBody?: unknown,
+    validate?: (payload: unknown) => void,
   ): Promise<unknown> {
     // ---- guardrails (see class docs) ----
     if (!this.env.ALLOW_LIVE_API && LIVE_API_HOST.test(new URL(this.config.baseUrl).host)) {
@@ -219,11 +230,11 @@ export class TpoClient {
     const endpointKind: EndpointKind = kind ?? "list";
     const url = new URL(path, this.config.baseUrl);
     const body = jsonBody === undefined ? undefined : JSON.stringify(jsonBody);
-    const auth = await this.sessionProvider.getRequestAuth(method, url.pathname);
+    let auth = await this.sessionProvider.getRequestAuth(method, url.pathname);
+    let refreshed = false;
 
     let lastError: unknown;
-    const attempts = this.config.maxRetries + 1;
-    for (let attempt = 1; attempt <= attempts; attempt++) {
+    for (let attempt = 1; ; attempt++) {
       await this.throttle();
       try {
         const response = await this.fetchFn(url, {
@@ -235,6 +246,11 @@ export class TpoClient {
 
         if (response.status === 401 || response.status === 403) {
           await auditLiveRequest({ method, path, status: response.status, ok: false, note: "auth-rejected" });
+          if (!refreshed && (await this.tryRefreshSession())) {
+            refreshed = true;
+            auth = await this.sessionProvider.getRequestAuth(method, url.pathname);
+            continue;
+          }
           throw new TpoAuthError(
             `TPO API rejected the session (HTTP ${response.status}) on ${path}. ` +
               "Session headers have likely expired — paste a fresh set into .env.",
@@ -267,6 +283,16 @@ export class TpoClient {
             ok: code === "200",
             note: code === "200" ? undefined : `business-${String(code)}`,
           });
+          try {
+            validate?.(json);
+          } catch (err) {
+            if (!refreshed && isAuthRejection(err) && (await this.tryRefreshSession())) {
+              refreshed = true;
+              auth = await this.sessionProvider.getRequestAuth(method, url.pathname);
+              continue;
+            }
+            throw err;
+          }
           await captureRawExchange(name, { method, url: url.toString(), routerPath: DEFAULT_ROUTER_PATHS[endpointKind] }, json);
           return json;
         }
@@ -286,14 +312,39 @@ export class TpoClient {
           lastError = err;
         }
       }
-      if (attempt < attempts) {
-        await sleep(backoffMs(attempt));
+      if (attempt > this.config.maxRetries) {
+        throw lastError instanceof Error
+          ? lastError
+          : new TpoNetworkError(`Unknown failure calling ${path}`);
       }
+      await sleep(backoffMs(attempt));
     }
-    throw lastError instanceof Error
-      ? lastError
-      : new TpoNetworkError(`Unknown failure calling ${path}`);
   }
+
+  /** One automatic session refresh per request, if the provider supports it. */
+  private async tryRefreshSession(): Promise<boolean> {
+    const provider = this.sessionProvider;
+    if (!provider.refreshAfterAuthFailure) return false;
+    try {
+      this.log.warn("auth rejected — attempting automatic session refresh");
+      return await provider.refreshAfterAuthFailure();
+    } catch (err) {
+      this.log.error({ err: String(err) }, "session refresh hook failed");
+      return false;
+    }
+  }
+}
+
+/**
+ * Auth rejections worth a session refresh: an HTTP-level 401/403 surfaces as
+ * TpoAuthError, but the portal also signals a dead session as HTTP 200 with
+ * business code "401" (surfaces as TpoApiError via expectBusinessOk).
+ */
+function isAuthRejection(err: unknown): boolean {
+  return (
+    err instanceof TpoAuthError ||
+    (err instanceof TpoApiError && err.code === "401")
+  );
 }
 
 function backoffMs(attempt: number): number {
