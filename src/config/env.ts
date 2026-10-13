@@ -79,6 +79,8 @@ export const envSchema = z.object({
   SMTP_USER: optionalSecret,
   SMTP_PASS: optionalSecret,
   NOTIFY_EMAIL_TO: optionalSecret,
+  /** Operational alerts (sync failures) — defaults to the first NOTIFY_EMAIL_TO address. */
+  NOTIFY_ALERT_EMAIL_TO: optionalSecret,
 
   // ---- AI (M9) ----
   AI_API_KEY: optionalSecret,

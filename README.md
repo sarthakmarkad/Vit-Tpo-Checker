@@ -144,7 +144,10 @@ opportunities — field-level diffs, deadlines, eligibility at a glance.
 Configure in `.env`:
 
 ```
-NOTIFY_EMAIL_TO=you@example.com   # recipient (channel disabled while empty)
+NOTIFY_EMAIL_TO=you@example.com,friend@example.com
+# First address = primary (To:), the rest are Cc'd on digests.
+NOTIFY_ALERT_EMAIL_TO=you@example.com
+# Operational alerts (sync failures) go here only. Defaults to the primary address.
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
 SMTP_USER=you@gmail.com           # sending account
@@ -152,9 +155,11 @@ SMTP_PASS=<app password>          # app password, never commit
 DRY_RUN=false                     # actually send (default true = log only)
 ```
 
-With `DRY_RUN=true` the digest is logged instead of sent, so wiring is
-verifiable without side effects. The same change feed is always visible in the
-dashboard at `/changes`.
+Digests are addressed To: the first `NOTIFY_EMAIL_TO` address with the rest
+Cc'd; failure alerts go **only** to `NOTIFY_ALERT_EMAIL_TO`. With
+`DRY_RUN=true` the digest is logged instead of sent, so wiring is
+verifiable without side effects. The same change feed is always visible in
+the dashboard at `/changes`.
 
 ## V1 definition of done
 

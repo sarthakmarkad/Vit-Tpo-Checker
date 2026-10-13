@@ -113,6 +113,38 @@ describe("EmailChannel", () => {
     const channel = EmailChannel.forTest({ transporter: undefined });
     await expect(channel.send(digest(), logger)).rejects.toThrow(/not configured/);
   });
+
+  it("addresses the digest To: the primary recipient and Cc: the rest", async () => {
+    const channel = EmailChannel.forTest({
+      transporter: fakeTransport(sent),
+      to: "primary@vit.edu",
+      cc: "friend1@gmail.com, friend2@gmail.com",
+    });
+    await channel.send(digest(), logger);
+    const mail = sent[0] as unknown as { to: string; cc?: string };
+    expect(mail.to).toBe("primary@vit.edu");
+    expect(mail.cc).toBe("friend1@gmail.com, friend2@gmail.com");
+  });
+
+  it("sends failure alerts only to the ops recipient, never the Cc list", async () => {
+    const channel = EmailChannel.forTest({
+      transporter: fakeTransport(sent),
+      to: "primary@vit.edu",
+      cc: "friend1@gmail.com",
+      alertTo: "ops@vit.edu",
+    });
+    await channel.sendFailureAlert("alert subject", "alert body", logger);
+    const mail = sent[0] as unknown as { to: string; cc?: string };
+    expect(mail.to).toBe("ops@vit.edu");
+    expect(mail.cc).toBeUndefined();
+  });
+
+  it("failure alerts fall back to the primary recipient when no ops address is set", async () => {
+    const channel = EmailChannel.forTest({ transporter: fakeTransport(sent) });
+    await channel.sendFailureAlert("alert subject", "alert body", logger);
+    const mail = sent[0] as unknown as { to: string };
+    expect(mail.to).toBe("student@example.com");
+  });
 });
 
 describe("NotificationService", () => {

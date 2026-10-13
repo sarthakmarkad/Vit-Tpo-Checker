@@ -72,7 +72,12 @@ function eligibilityLine(opp: {
 }
 
 export interface EmailConfig {
+  /** Primary recipient — digests are addressed To: this address. */
   to: string;
+  /** Secondary recipients, Cc'd on digests only. */
+  cc?: string;
+  /** Operational alerts (sync failures) go here and only here. */
+  alertTo?: string;
   from: string;
   dryRun: boolean;
   transporter: Transporter | undefined;
@@ -91,6 +96,12 @@ export class EmailChannel implements NotificationChannel {
   static fromEnv(): EmailChannel | undefined {
     const env = loadEnv();
     if (!env.NOTIFY_EMAIL_TO) return undefined;
+    const recipients = env.NOTIFY_EMAIL_TO.split(",")
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
+    const to = recipients[0] ?? "";
+    const cc = recipients.slice(1).join(",") || undefined;
+    const alertTo = env.NOTIFY_ALERT_EMAIL_TO || to;
     const transporter =
       env.SMTP_HOST && env.SMTP_PORT
         ? nodemailer.createTransport({
@@ -104,7 +115,9 @@ export class EmailChannel implements NotificationChannel {
           })
         : undefined;
     return new EmailChannel({
-      to: env.NOTIFY_EMAIL_TO,
+      to,
+      ...(cc ? { cc } : {}),
+      alertTo,
       from: env.SMTP_USER || "placement-intel@localhost",
       dryRun: env.DRY_RUN,
       transporter,
@@ -115,6 +128,8 @@ export class EmailChannel implements NotificationChannel {
   static forTest(config: Partial<EmailConfig>): EmailChannel {
     return new EmailChannel({
       to: config.to ?? "student@example.com",
+      ...(config.cc !== undefined ? { cc: config.cc } : {}),
+      ...(config.alertTo !== undefined ? { alertTo: config.alertTo } : {}),
       from: config.from ?? "placement-intel@test",
       dryRun: config.dryRun ?? false,
       transporter: config.transporter,
@@ -146,14 +161,19 @@ export class EmailChannel implements NotificationChannel {
     await this.config.transporter.sendMail({
       from: this.config.from,
       to: this.config.to,
+      ...(this.config.cc ? { cc: this.config.cc } : {}),
       subject,
       text,
       html,
     });
-    log?.info({ to: this.config.to, subject }, "digest email sent");
+    log?.info({ to: this.config.to, cc: this.config.cc, subject }, "digest email sent");
   }
 
-  /** Operational alert (e.g. repeated sync failures) — same transport, plain text. */
+  /**
+   * Operational alert (e.g. repeated sync failures) — goes only to the ops
+   * recipient (NOTIFY_ALERT_EMAIL_TO, default: the primary address), never
+   * to the Cc'd digest recipients.
+   */
   async sendFailureAlert(subject: string, text: string, log?: Logger): Promise<void> {
     if (!this.configured || !this.config.transporter) {
       throw new Error(
@@ -161,16 +181,16 @@ export class EmailChannel implements NotificationChannel {
       );
     }
     if (this.config.dryRun) {
-      log?.info({ subject, to: this.config.to }, "DRY_RUN: would send failure alert");
+      log?.info({ subject, to: this.config.alertTo }, "DRY_RUN: would send failure alert");
       return;
     }
     await this.config.transporter.sendMail({
       from: this.config.from,
-      to: this.config.to,
+      to: this.config.alertTo ?? this.config.to,
       subject,
       text,
     });
-    log?.info({ to: this.config.to, subject }, "failure alert sent");
+    log?.info({ to: this.config.alertTo, subject }, "failure alert sent");
   }
 
   private subject(digest: NotificationDigest): string {
