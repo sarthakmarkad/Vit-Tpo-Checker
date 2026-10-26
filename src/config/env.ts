@@ -62,6 +62,12 @@ export const envSchema = z.object({
   TPO_EPS_TENANT: optionalSecret,
   TPO_DEVICE_SIGNATURE: optionalSecret,
   TPO_REQUEST_TIMESTAMP: optionalSecret,
+  /**
+   * Eduplus TOTP setup key (base32) from the authenticator app — used to
+   * generate the 6-digit second factor the portal now requires at login.
+   * Presence-validated only; never logged.
+   */
+  TPO_TOTP_SECRET: optionalSecret,
 
   // ---- Database ----
   DATABASE_URL: z

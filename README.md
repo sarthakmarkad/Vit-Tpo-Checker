@@ -24,7 +24,9 @@ npm install                      # installs backend + dashboard workspace
 cp .env.example .env             # then edit (see Security below)
 npx prisma migrate deploy        # create schema
 
-npm run login                    # first-party login (device key + ALTCHA + ECDSA signing)
+npm run login                    # first-party login (device key + ALTCHA + ECDSA signing);
+                                 # the portal now requires TOTP MFA — set TPO_TOTP_SECRET
+                                 # in .env (authenticator setup key) so logins succeed
 npm run sync:once                # one-shot sync: T&P API → PostgreSQL → log
 npm run monitor                  # long-running: sync every SYNC_INTERVAL_MINUTES
 

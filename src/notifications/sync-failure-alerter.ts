@@ -31,8 +31,9 @@ export class SyncFailureAlerter {
     const errText = String(err);
     const hint = errText.includes("401")
       ? "The T&P session expired and the automatic re-login did not fix it —\n" +
-        "most likely the stored password changed. Update TPO_USERNAME/TPO_PASSWORD\n" +
-        "in .env if needed, run `npm run login` once, then\n" +
+        "most likely stored credentials need refresh. Update TPO_USERNAME,\n" +
+        "TPO_PASSWORD, and TPO_TOTP_SECRET (your authenticator setup key) in\n" +
+        ".env if needed, run `npm run login` once, then\n" +
         "`launchctl kickstart -k gui/$(id -u)/com.sarthakmarkad.placement-monitor`."
       : "Check `var/logs/launchd.out.log` (or `var/logs/launchd.err.log`) for details.";
     const subject = `Placement monitor: ${this.consecutiveFailures} consecutive sync failures`;
